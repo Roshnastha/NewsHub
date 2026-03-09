@@ -1,0 +1,34 @@
+{
+  "model_name": "Fake News Detection Model",
+  "version": "1.0.0",
+  "model_type": "sklearn",
+  "framework": "scikit-learn",
+  "classifier": "LogisticRegression",
+  "vectorizer": "TfidfVectorizer",
+  "classes": ["Real", "Fake"],
+  "features": {
+    "title_weight": 1.5,
+    "content_weight": 1.0,
+    "min_df": 5,
+    "max_df": 0.8,
+    "max_features": 5000
+  },
+  "performance": {
+    "accuracy": 0.92,
+    "precision": 0.91,
+    "recall": 0.93,
+    "f1_score": 0.92
+  },
+  "training_data": {
+    "samples": 10000,
+    "source": "Your Dataset Name",
+    "trained_date": "2024-01-15"
+  },
+  "required_preprocessing": [
+    "lowercase",
+    "remove_urls",
+    "remove_special_characters",
+    "tokenization"
+  ],
+  "confidence_threshold": 0.5
+}

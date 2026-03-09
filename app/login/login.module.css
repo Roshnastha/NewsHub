@@ -1,0 +1,296 @@
+.loginContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%);
+}
+
+.loginContent {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  padding: var(--space-12);
+  max-width: 500px;
+  width: 100%;
+  border: 1px solid var(--color-border);
+  position: relative;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-600);
+  padding: var(--space-2);
+  margin: -8px -8px var(--space-4) -8px;
+  border-radius: var(--radius-lg);
+  transition: all var(--duration-fast) var(--timing-ease-out);
+}
+
+.backButton:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: var(--space-10);
+}
+
+.header h1 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-700);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.header p {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+}
+
+.roleSection {
+  margin-bottom: var(--space-8);
+}
+
+.roleLabel {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-600);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.roleButtons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.roleButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-4);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-600);
+  cursor: pointer;
+  transition: all var(--duration-base) var(--timing-ease-out);
+}
+
+.roleButton:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  transform: translateY(-2px);
+}
+
+.roleButton.active {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.roleButton small {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-400);
+  margin-top: var(--space-1);
+}
+
+.socialSection {
+  margin-bottom: var(--space-6);
+}
+
+.socialLabel {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-600);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.socialButtons {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.socialButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-600);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--timing-ease-out);
+}
+
+.socialButton:hover {
+  border-color: var(--color-primary);
+  background-color: rgba(59, 130, 246, 0.05);
+  color: var(--color-primary);
+  transform: translateY(-2px);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.formGroup label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-600);
+  color: var(--color-text-primary);
+}
+
+.inputWrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+  background-color: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 0 var(--space-3);
+  transition: all var(--duration-fast) var(--timing-ease-out);
+}
+
+.inputWrapper:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.inputWrapper .icon {
+  color: var(--color-text-muted);
+  margin-right: var(--space-2);
+  flex-shrink: 0;
+}
+
+.inputWrapper input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  padding: var(--space-3) 0;
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+}
+
+.inputWrapper input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.showPassword {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 var(--space-2);
+  font-size: var(--font-size-lg);
+  color: var(--color-text-muted);
+  transition: all var(--duration-fast) var(--timing-ease-out);
+}
+
+.showPassword:hover {
+  color: var(--color-text-primary);
+}
+
+.error {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-500);
+}
+
+.submitButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-600);
+  cursor: pointer;
+  transition: all var(--duration-base) var(--timing-ease-out);
+}
+
+.submitButton:hover {
+  background-color: var(--color-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.submitButton:active {
+  transform: translateY(0);
+}
+
+.divider {
+  position: relative;
+  height: 1px;
+  background-color: var(--color-border);
+  margin: var(--space-8) 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.divider span {
+  background-color: var(--color-bg-card);
+  padding: 0 var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-600);
+}
+
+.footer {
+  text-align: center;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 640px) {
+  .loginContent {
+    padding: var(--space-6);
+  }
+
+  .header h1 {
+    font-size: var(--font-size-xl);
+  }
+
+  .roleButtons {
+    grid-template-columns: 1fr;
+  }
+}

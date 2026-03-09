@@ -1,0 +1,26 @@
+.breakingNews {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: white;
+  padding: var(--space-3) var(--space-4);
+  text-align: center;
+  font-weight: var(--font-weight-600);
+  font-size: var(--font-size-sm);
+  animation: pulse 2s ease-in-out infinite;
+  letter-spacing: 0.5px;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+@media (max-width: 768px) {
+  .breakingNews {
+    font-size: var(--font-size-xs);
+    padding: var(--space-2) var(--space-3);
+  }
+}
