@@ -44,10 +44,10 @@ def check_files():
         print_status("OK" if exists else "FAIL", desc)
         all_ok = all_ok and exists
     
-    # Check for model.onnx
-    model_file = backend_dir / "model" / "model.onnx"
+    # Check for model_1.onnx
+    model_file = backend_dir / "model" / "model_1.onnx"
     exists = model_file.exists()
-    print_status("OK" if exists else "WARN", f"model.onnx exists in model/")
+    print_status("OK" if exists else "WARN", f"model_1.onnx exists in model/")
     
     return all_ok
 
@@ -90,17 +90,17 @@ def check_python_version():
     return True
 
 def check_model_onnx():
-    """Check if model.onnx is valid ONNX file"""
+    """Check if model_1.onnx is valid ONNX file"""
     print(f"\n{BLUE}=== Checking ONNX Model ==={RESET}")
     
     backend_dir = Path(__file__).parent
-    model_file = backend_dir / "model" / "model.onnx"
+    model_file = backend_dir / "model" / "model_1.onnx"
     
     if not model_file.exists():
-        print_status("FAIL", f"model.onnx not found at {model_file}")
+        print_status("FAIL", f"model_1.onnx not found at {model_file}")
         return False
     
-    print_status("OK", f"model.onnx found at {model_file}")
+    print_status("OK", f"model_1.onnx found at {model_file}")
     
     # Try to load with onnxruntime
     try:
@@ -160,7 +160,7 @@ def main():
             print(f"\n{YELLOW}Install packages with: pip install -r requirements.txt{RESET}")
         
         if 'ONNX Model' in failed:
-            print(f"\n{YELLOW}Add your model.onnx to: backend/model/model.onnx{RESET}")
+            print(f"\n{YELLOW}Add your model_1.onnx to: backend/model/model_1.onnx{RESET}")
         
         return 1
 

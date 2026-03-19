@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { X, Upload, Loader } from 'lucide-react';
-import { useNews } from '@/app/context/NewsContext';
-import { predictVideo } from '@/app/lib/api-client';
-import styles from './AddNewsModal.module.css';
+import { useState } from "react";
+import { X, Upload, Loader } from "lucide-react";
+import { useNews } from "@/app/context/NewsContext";
+import { predictVideo } from "@/app/lib/api-client";
+import styles from "./AddNewsModal.module.css";
 
 interface ValidationResult {
-  status: 'pending' | 'success' | 'error';
-  label?: 'Real' | 'AI-generated';
+  status: "pending" | "success" | "error";
+  label?: "Real" | "AI-generated";
   confidence?: number;
   message?: string;
 }
@@ -20,26 +20,27 @@ interface AddNewsModalProps {
 
 export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
   const { addArticle } = useNews();
-  const [title, setTitle] = useState('');
-  const [excerpt, setExcerpt] = useState('');
-  const [content, setContent] = useState('');
+  const [title, setTitle] = useState("");
+  const [excerpt, setExcerpt] = useState("");
+  const [content, setContent] = useState("");
   // default to first non-breaking category
-  const [category, setCategory] = useState('Politics');
+  const [category, setCategory] = useState("Politics");
   const [media, setMedia] = useState<File | null>(null);
-  const [mediaPreview, setMediaPreview] = useState<string>('');
-  const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null);
-  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string>("");
+  const [mediaType, setMediaType] = useState<"image" | "video" | null>(null);
+  const [validationResult, setValidationResult] =
+    useState<ValidationResult | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleClose = () => {
     // Reset all form state when closing
-    setTitle('');
-    setExcerpt('');
-    setContent('');
-    setCategory('Politics');
+    setTitle("");
+    setExcerpt("");
+    setContent("");
+    setCategory("Politics");
     setMedia(null);
-    setMediaPreview('');
+    setMediaPreview("");
     setMediaType(null);
     setValidationResult(null);
     setIsValidating(false);
@@ -54,13 +55,13 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
       setValidationResult(null); // Reset validation
 
       // Determine media type
-      if (file.type.startsWith('image/')) {
-        setMediaType('image');
+      if (file.type.startsWith("image/")) {
+        setMediaType("image");
         const reader = new FileReader();
         reader.onload = (e) => setMediaPreview(e.target?.result as string);
         reader.readAsDataURL(file);
-      } else if (file.type.startsWith('video/')) {
-        setMediaType('video');
+      } else if (file.type.startsWith("video/")) {
+        setMediaType("video");
         const reader = new FileReader();
         reader.onload = (e) => setMediaPreview(e.target?.result as string);
         reader.readAsDataURL(file);
@@ -68,45 +69,45 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
     }
   };
 
-
   const validateMedia = async () => {
     if (!media) return;
 
     // only videos are supported by the detection model
-    if (mediaType !== 'video') {
+    if (mediaType !== "video") {
       setValidationResult({
-        status: 'error',
-        message: 'Only video files can be validated at the moment.',
+        status: "error",
+        message: "Only video files can be validated at the moment.",
       });
       return;
     }
 
     setIsValidating(true);
-    setValidationResult({ status: 'pending' });
+    setValidationResult({ status: "pending" });
 
     try {
       // use shared API client so the url from NEXT_PUBLIC_API_URL is respected
       const data = await predictVideo(media);
       if (!data) {
-        throw new Error('No prediction returned from server');
+        throw new Error("No prediction returned from server");
       }
 
-      const label = data.label === 'Real' ? 'Real' : 'AI-generated';
+      const label = data.label === "Real" ? "Real" : "AI-generated";
       const confidencePercent = Math.round(data.confidence * 100);
 
       setValidationResult({
-        status: 'success',
-        label: label as 'Real' | 'AI-generated',
+        status: "success",
+        label: label as "Real" | "AI-generated",
         confidence: confidencePercent,
         message: `${label} (${confidencePercent}% confidence)`,
       });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       // the api-client throws with a message from the response or default
       setValidationResult({
-        status: 'error',
-        message: error.message || 'Validation failed. Please try again.',
+        status: "error",
+        message: error.message || "Validation failed. Please try again.",
       });
-      console.error('validation error', error);
+      console.error("validation error", error);
     } finally {
       setIsValidating(false);
     }
@@ -116,7 +117,7 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
     e.preventDefault();
 
     if (!title || !excerpt || !content || !media || !validationResult?.label) {
-      alert('Please fill all fields and validate media');
+      alert("Please fill all fields and validate media");
       return;
     }
 
@@ -130,16 +131,16 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
         excerpt,
         content,
         category,
-        author: 'You',
-        publishedAt: 'just now',
-        readTime: '3 min',
+        author: "You",
+        publishedAt: "just now",
+        readTime: "3 min",
         image: mediaPreview,
-        views: '0',
+        views: "0",
         comments: 0,
-        tags: category.toLowerCase().split(' '),
+        tags: category.toLowerCase().split(" "),
         trending: true,
         featured: false,
-        modelResult: validationResult.label as 'Real' | 'AI-generated',
+        modelResult: validationResult.label as "Real" | "AI-generated",
       };
 
       addArticle(newArticle);
@@ -147,7 +148,7 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
       // Reset form and close modal
       handleClose();
     } catch (error) {
-      alert('Failed to add article');
+      alert("Failed to add article");
     } finally {
       setIsSubmitting(false);
     }
@@ -213,7 +214,7 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
               value={category}
               onChange={(e) => setCategory(e.target.value)}
             >
-                      <option>Technology</option>
+              <option>Technology</option>
               <option>Science</option>
               <option>Business</option>
               <option>Sports</option>
@@ -243,10 +244,18 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
             {/* Media Preview */}
             {mediaPreview && (
               <div className={styles.previewContainer}>
-                {mediaType === 'image' ? (
-                  <img src={mediaPreview} alt="Preview" className={styles.preview} />
+                {mediaType === "image" ? (
+                  <img
+                    src={mediaPreview}
+                    alt="Preview"
+                    className={styles.preview}
+                  />
                 ) : (
-                  <video src={mediaPreview} controls className={styles.preview} />
+                  <video
+                    src={mediaPreview}
+                    controls
+                    className={styles.preview}
+                  />
                 )}
               </div>
             )}
@@ -257,7 +266,7 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
             <div className={styles.validationSection}>
               <div className={styles.validationHeader}>
                 <h3>Media Verification</h3>
-                {validationResult?.status !== 'pending' && (
+                {validationResult?.status !== "pending" && (
                   <button
                     type="button"
                     onClick={validateMedia}
@@ -270,9 +279,9 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
                         Validating...
                       </>
                     ) : validationResult ? (
-                      'Re-validate'
+                      "Re-validate"
                     ) : (
-                      'Validate Media'
+                      "Validate Media"
                     )}
                   </button>
                 )}
@@ -285,23 +294,39 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
                 </div>
               )}
 
-              {validationResult?.status === 'success' && (
-                <div className={`${styles.result} ${styles.success}`}>
+              {validationResult?.status === "success" && (
+                <div
+                  className={`${styles.result} ${validationResult.label === "Real" ? styles.success : styles.danger}`}
+                >
+                  {" "}
+                  {/* ← ADDED styles.danger condition */}
                   <div className={styles.resultContent}>
-                    <p className={styles.label}>
-                      {validationResult.label === 'Real' ? '✓ Real' : '⚠ AI-Generated'}
+                    <p
+                      className={
+                        validationResult.label === "Real"
+                          ? styles.labelReal
+                          : styles.labelFake
+                      }
+                    >
+                      {" "}
+                      {/* ← ADDED labelReal/labelFake condition */}
+                      {validationResult.label === "Real"
+                        ? "✓ Real"
+                        : "⚠ AI-Generated"}
                     </p>
                     <p className={styles.confidence}>
                       Confidence: {validationResult.confidence}%
                     </p>
                   </div>
                   <div className={styles.badge}>
-                    {validationResult.label === 'Real' ? '✓ Verified' : '⚠ Warning'}
+                    {validationResult.label === "Real"
+                      ? "✓ Verified"
+                      : "⚠ Warning"}
                   </div>
                 </div>
               )}
 
-              {validationResult?.status === 'error' && (
+              {validationResult?.status === "error" && (
                 <div className={`${styles.result} ${styles.error}`}>
                   <p>{validationResult.message}</p>
                 </div>
@@ -320,7 +345,7 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
                       Validating...
                     </>
                   ) : (
-                    'Validate Media'
+                    "Validate Media"
                   )}
                 </button>
               )}
@@ -348,7 +373,7 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
                   Publishing...
                 </>
               ) : (
-                'Publish Article'
+                "Publish Article"
               )}
             </button>
           </div>

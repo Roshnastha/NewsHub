@@ -425,3 +425,20 @@
     justify-content: center;
   }
 }
+.danger {
+  /* ← ADDED */
+  background-color: #fef2f2; /* ← ADDED */
+  border: 1px solid #fecaca; /* ← ADDED */
+} /* ← ADDED */
+
+.labelReal {
+  /* ← ADDED */
+  color: #16a34a; /* ← ADDED */
+  font-weight: 600; /* ← ADDED */
+} /* ← ADDED */
+
+.labelFake {
+  /* ← ADDED */
+  color: #ef4444; /* ← ADDED */
+  font-weight: 600; /* ← ADDED */
+} /* ← ADDED */

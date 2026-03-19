@@ -51,12 +51,12 @@ async def load_model():
     """Load the ONNX model on startup"""
     global session, input_name
     try:
-        model_path = Path(__file__).parent / "model" / "model.onnx"
+        model_path = Path(__file__).parent / "model" / "model_1.onnx"
         
         # Check if model file exists
         if not model_path.exists():
             print(f"\n⚠️  Model not found at {model_path}")
-            print("📍 Please place your model.onnx file in backend/model/")
+            print("📍 Please place your model_1.onnx file in backend/model/")
             print("✅ Backend will run in DEMO mode without real predictions\n")
             session = None
             return
@@ -85,6 +85,9 @@ def extract_16_consecutive_frames(video_path):
     start_idx = 0
     end_idx = start_idx + 16
 
+    mean = np.array([0.485, 0.456, 0.406])  # < ADDED
+    std  = np.array([0.229, 0.224, 0.225])  # < ADDED
+
     frames = []
     for i in range(total_frames):
         ret, frame = cap.read()
@@ -94,13 +97,15 @@ def extract_16_consecutive_frames(video_path):
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frame = cv2.resize(frame, (224, 224))
             frame = frame.astype(np.float32) / 255.0
+            frame = (frame - mean) / std    # < ADDED
+
             frames.append(frame)
 
     cap.release()
 
     # [16, 224, 224, 3] → [1, 16, 3, 224, 224]
     frames = np.array(frames).transpose(0, 3, 1, 2)
-    frames = np.expand_dims(frames, axis=0)
+    frames = np.expand_dims(frames, axis=0).astype(np.float32) # < ADDED
     return frames
 
 @app.get("/health")
@@ -173,7 +178,7 @@ async def predict(file: UploadFile = File(...)):
         predicted_class_index = np.argmax(probs, axis=1)[0]
         confidence = float(probs[0][predicted_class_index])
         
-        labels = ["AI-generated", "Real"]
+        labels = ["AI", "Real"]
         predicted_label = labels[predicted_class_index]
         
         # Format prediction string
@@ -185,7 +190,7 @@ async def predict(file: UploadFile = File(...)):
             confidence=confidence,
             label=predicted_label,
             raw_probability={
-                "AI-generated": float(probs[0][0]),
+                "AI": float(probs[0][0]),
                 "Real": float(probs[0][1])
             },
             logits=logits.tolist()
