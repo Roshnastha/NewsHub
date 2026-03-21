@@ -1,12 +1,16 @@
-'use client';
+"use client";
 
-import Header from './Header';
-import HeroSection from './HeroSection';
-import NewsGrid from './NewsGrid';
-import Sidebar from './Sidebar';
-import Footer from './Footer';
-import BreakingNews from './BreakingNews';
-import styles from './Home.module.css';
+import Header from "./Header";
+import HeroSection from "./HeroSection";
+import NewsGrid from "./NewsGrid";
+import Sidebar from "./Sidebar";
+import Footer from "./Footer";
+import BreakingNews from "./BreakingNews";
+import styles from "./Home.module.css";
+import DBNewsGrid from "./DBNewsGrid";
+
+// Inside the JSX, add before or after existing news grid:
+<DBNewsGrid />;
 
 export default function HomePage() {
   return (

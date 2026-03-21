@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X, Upload, Loader } from "lucide-react";
 import { useNews } from "@/app/context/NewsContext";
+import { useAuth } from "@/app/context/AuthContext";
 import { predictVideo } from "@/app/lib/api-client";
 import styles from "./AddNewsModal.module.css";
 
@@ -19,11 +20,11 @@ interface AddNewsModalProps {
 }
 
 export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
-  const { addArticle } = useNews();
+  const { refreshArticles } = useNews();
+  const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
-  // default to first non-breaking category
   const [category, setCategory] = useState("Politics");
   const [media, setMedia] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string>("");
@@ -34,7 +35,6 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleClose = () => {
-    // Reset all form state when closing
     setTitle("");
     setExcerpt("");
     setContent("");
@@ -52,9 +52,8 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
     const file = e.target.files?.[0];
     if (file) {
       setMedia(file);
-      setValidationResult(null); // Reset validation
+      setValidationResult(null);
 
-      // Determine media type
       if (file.type.startsWith("image/")) {
         setMediaType("image");
         const reader = new FileReader();
@@ -72,7 +71,6 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
   const validateMedia = async () => {
     if (!media) return;
 
-    // only videos are supported by the detection model
     if (mediaType !== "video") {
       setValidationResult({
         status: "error",
@@ -85,11 +83,8 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
     setValidationResult({ status: "pending" });
 
     try {
-      // use shared API client so the url from NEXT_PUBLIC_API_URL is respected
       const data = await predictVideo(media);
-      if (!data) {
-        throw new Error("No prediction returned from server");
-      }
+      if (!data) throw new Error("No prediction returned from server");
 
       const label = data.label === "Real" ? "Real" : "AI-generated";
       const confidencePercent = Math.round(data.confidence * 100);
@@ -100,12 +95,14 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
         confidence: confidencePercent,
         message: `${label} (${confidencePercent}% confidence)`,
       });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      // the api-client throws with a message from the response or default
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Validation failed. Please try again.";
       setValidationResult({
         status: "error",
-        message: error.message || "Validation failed. Please try again.",
+        message,
       });
       console.error("validation error", error);
     } finally {
@@ -121,34 +118,64 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
       return;
     }
 
+    if (!user?.id) {
+      alert("You must be logged in to publish");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      // Create new article with validation result
-      const newArticle = {
-        id: Date.now(),
-        title,
-        excerpt,
-        content,
-        category,
-        author: "You",
-        publishedAt: "just now",
-        readTime: "3 min",
-        image: mediaPreview,
-        views: "0",
-        comments: 0,
-        tags: category.toLowerCase().split(" "),
-        trending: true,
-        featured: false,
-        modelResult: validationResult.label as "Real" | "AI-generated",
-      };
+      // Step 1: Upload media to Cloudinary
+      const formData = new FormData();
+      formData.append("file", media);
 
-      addArticle(newArticle);
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
 
-      // Reset form and close modal
+      if (!uploadRes.ok) {
+        const errData = await uploadRes.json();
+        console.error("Upload failed:", errData);
+        throw new Error("Media upload failed");
+      }
+      const uploadData = await uploadRes.json();
+      console.log("Upload success:", uploadData);
+
+      const imageUrl = mediaType === "image" ? uploadData.url : null;
+      const videoUrl = mediaType === "video" ? uploadData.url : null;
+
+      // Step 2: Save article to database
+      const articleRes = await fetch("/api/articles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          content,
+          excerpt,
+          category,
+          imageUrl,
+          videoUrl,
+          tags: [category.toLowerCase()],
+          featured: false,
+          aiResult: validationResult.label,
+          aiConfidence: validationResult.confidence
+            ? validationResult.confidence / 100
+            : null,
+          aiVerified: true,
+          authorId: user.id,
+        }),
+      });
+
+      if (!articleRes.ok) throw new Error("Failed to save article");
+
+      // Refresh DB articles
+      refreshArticles();
       handleClose();
     } catch (error) {
-      alert("Failed to add article");
+      alert("Failed to publish article. Please try again.");
+      console.error(error);
     } finally {
       setIsSubmitting(false);
     }
@@ -296,10 +323,12 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
 
               {validationResult?.status === "success" && (
                 <div
-                  className={`${styles.result} ${validationResult.label === "Real" ? styles.success : styles.danger}`}
+                  className={`${styles.result} ${
+                    validationResult.label === "Real"
+                      ? styles.success
+                      : styles.danger
+                  }`}
                 >
-                  {" "}
-                  {/* ← ADDED styles.danger condition */}
                   <div className={styles.resultContent}>
                     <p
                       className={
@@ -308,8 +337,6 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
                           : styles.labelFake
                       }
                     >
-                      {" "}
-                      {/* ← ADDED labelReal/labelFake condition */}
                       {validationResult.label === "Real"
                         ? "✓ Real"
                         : "⚠ AI-Generated"}
@@ -339,14 +366,7 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
                   disabled={isValidating}
                   className={styles.validateButton}
                 >
-                  {isValidating ? (
-                    <>
-                      <Loader size={16} className={styles.spinner} />
-                      Validating...
-                    </>
-                  ) : (
-                    "Validate Media"
-                  )}
+                  Validate Media
                 </button>
               )}
             </div>

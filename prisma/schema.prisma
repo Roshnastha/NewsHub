@@ -1,4 +1,41 @@
-//  < added
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  id                String    @id @default(cuid())
+  name              String
+  email             String    @unique
+  password          String
+  role              String    @default("reader")
+  status            String    @default("pending")
+  emailVerified     DateTime?
+  verifyToken       String?   @unique
+  verifyTokenExpiry DateTime?
+  createdAt         DateTime  @default(now())
+  articles          Article[]
+}
+
+model Article {
+  id           String   @id @default(cuid())
+  title        String
+  content      String
+  excerpt      String?
+  publishedAt  DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  featured     Boolean  @default(false)
+  authorId     String
+  author       User     @relation(fields: [authorId], references: [id])
+  imageUrl     String?
+  videoUrl     String?
+  category     String?
+  tags         String[]
+  aiVerified   Boolean  @default(false)
+  aiResult     String?
+  aiConfidence Float?
 }

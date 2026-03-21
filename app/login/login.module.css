@@ -4,7 +4,11 @@
   align-items: center;
   justify-content: center;
   padding: var(--space-6);
-  background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-bg-primary) 0%,
+    var(--color-bg-secondary) 100%
+  );
 }
 
 .loginContent {
@@ -293,4 +297,41 @@
   .roleButtons {
     grid-template-columns: 1fr;
   }
+}
+
+.success {
+  background-color: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-500);
+}
+
+.submitButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.secondaryButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-600);
+  cursor: pointer;
+  transition: all var(--duration-base) var(--timing-ease-out);
+  width: 100%;
+}
+
+.secondaryButton:hover {
+  background-color: rgba(59, 130, 246, 0.1);
 }
