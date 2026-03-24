@@ -105,7 +105,7 @@
   .menuButton {
     display: flex;
   }
-  
+
   .actions {
     gap: var(--space-2);
   }
@@ -135,10 +135,6 @@
   padding: var(--space-4);
   background: var(--color-background);
   border-top: 1px solid var(--color-border);
-}
-
-.mobileNav {
-  display: flex;
 }
 
 .mobileNavItem {

@@ -7,7 +7,7 @@
 
 .main {
   flex: 1;
-  max-width: 1200px;
+  max-width: 1344px;        /* 1200px × 1.12 */
   margin: 0 auto;
   width: 100%;
   padding: var(--space-6) var(--space-4);
@@ -15,19 +15,19 @@
 
 .mainGrid {
   display: grid;
-  grid-template-columns: 1fr 300px;
+  grid-template-columns: 1fr 336px;   /* 300px × 1.12 */
   gap: var(--space-8);
   align-items: start;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1147px) {           /* 1024px × 1.12 */
   .mainGrid {
     grid-template-columns: 1fr;
     gap: var(--space-6);
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 860px) {            /* 768px × 1.12 */
   .main {
     padding: var(--space-4) var(--space-3);
   }

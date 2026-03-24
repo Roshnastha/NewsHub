@@ -151,7 +151,6 @@
   flex-wrap: wrap;
 }
 
-
 .editButton,
 .deleteButton {
   width: 36px;
@@ -167,8 +166,6 @@
   color: var(--color-text-primary);
   font-size: 16px;
 }
-
-
 
 .editButton {
   background-color: transparent;
