@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
 
     if (!token) {
       return NextResponse.redirect(
-        `${process.env.NEXTAUTH_URL}/login?error=InvalidToken`
+        `${process.env.NEXTAUTH_URL}/login?error=InvalidToken`,
       );
     }
 
@@ -15,9 +15,13 @@ export async function GET(req: NextRequest) {
       where: { verifyToken: token },
     });
 
-    if (!user || !user.verifyTokenExpiry || user.verifyTokenExpiry < new Date()) {
+    if (
+      !user ||
+      !user.verifyTokenExpiry ||
+      user.verifyTokenExpiry < new Date()
+    ) {
       return NextResponse.redirect(
-        `${process.env.NEXTAUTH_URL}/login?error=TokenExpired`
+        `${process.env.NEXTAUTH_URL}/login?error=TokenExpired`,
       );
     }
 
@@ -31,12 +35,12 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL}/login?verified=true`
+      `${process.env.NEXTAUTH_URL}/login?verified=true`,
     );
   } catch (error) {
     console.error("Verification error:", error);
     return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL}/login?error=ServerError`
+      `${process.env.NEXTAUTH_URL}/login?error=ServerError`,
     );
   }
 }

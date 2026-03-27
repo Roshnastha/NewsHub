@@ -264,8 +264,9 @@ export default function LoginPage() {
                   <small>Create and manage articles</small>
                 </button>
                 <button
-                  className={`${styles.roleButton} ${selectedRole === "admin" ? styles.active : ""}`}
+                  className={`${styles.roleButton} ${selectedRole === "admin" ? styles.active : "none"}`}
                   onClick={() => handleRoleSelect("admin")}
+                  style={{ display: "none" }}
                 >
                   <Shield size={24} />
                   <span>Admin</span>

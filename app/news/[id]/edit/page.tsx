@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { X, Upload, Loader } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useNews } from "@/app/context/NewsContext";
 import { predictVideo } from "@/app/lib/api-client";
-import { Upload, Loader, ArrowLeft } from "lucide-react";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
-import styles from "./edit.module.css";
+import styles from "@/app/components/AddNewsModal.module.css";
 
 interface DBArticle {
   id: string;
@@ -36,7 +36,7 @@ interface ValidationResult {
 export default function EditArticlePage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
-  const { user, isPublisher } = useAuth();
+  const { isPublisher } = useAuth();
   const { refreshArticles } = useNews();
 
   const [article, setArticle] = useState<DBArticle | null>(null);
@@ -61,11 +61,12 @@ export default function EditArticlePage() {
       router.push("/");
       return;
     }
+    let cancelled = false;
     const load = async () => {
       try {
         const res = await fetch(`/api/articles/${id}`);
         const data = await res.json();
-        if (data.article) {
+        if (!cancelled && data.article) {
           const a = data.article;
           setArticle(a);
           setTitle(a.title);
@@ -77,10 +78,13 @@ export default function EditArticlePage() {
       } catch (err) {
         console.error(err);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
     load();
+    return () => {
+      cancelled = true;
+    };
   }, [id, isPublisher, router]);
 
   const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,10 +106,11 @@ export default function EditArticlePage() {
   };
 
   const validateMedia = async () => {
-    if (!media || mediaType !== "video") {
+    if (!media) return;
+    if (mediaType !== "video") {
       setValidationResult({
         status: "error",
-        message: "Only video files can be validated.",
+        message: "Only video files can be validated at the moment.",
       });
       return;
     }
@@ -113,7 +118,7 @@ export default function EditArticlePage() {
     setValidationResult({ status: "pending" });
     try {
       const data = await predictVideo(media);
-      if (!data) throw new Error("No prediction returned");
+      if (!data) throw new Error("No prediction returned from server");
       const label = data.label === "Real" ? "Real" : "AI-generated";
       const confidencePercent = Math.round(data.confidence * 100);
       setValidationResult({
@@ -123,7 +128,9 @@ export default function EditArticlePage() {
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : "Validation failed.";
+        error instanceof Error
+          ? error.message
+          : "Validation failed. Please try again.";
       setValidationResult({ status: "error", message });
     } finally {
       setIsValidating(false);
@@ -143,7 +150,6 @@ export default function EditArticlePage() {
       let aiResult = article?.aiResult || null;
       let aiConfidence = article?.aiConfidence || null;
 
-      // Upload new media if provided
       if (media) {
         const formData = new FormData();
         formData.append("file", media);
@@ -221,46 +227,67 @@ export default function EditArticlePage() {
   return (
     <>
       <Header />
-      <div className={styles.container}>
-        <div className={styles.formCard}>
-          <button className={styles.backButton} onClick={() => router.back()}>
-            <ArrowLeft size={18} /> Back
-          </button>
-          <h1 className={styles.heading}>Edit Article</h1>
+      <div
+        style={{ padding: "2rem", display: "flex", justifyContent: "center" }}
+      >
+        <div
+          className={styles.modal}
+          style={{ position: "relative", maxHeight: "none" }}
+        >
+          <div className={styles.header}>
+            <h2>Edit Article</h2>
+            <button
+              className={styles.closeButton}
+              onClick={() => router.back()}
+            >
+              <X size={24} />
+            </button>
+          </div>
 
           <form onSubmit={handleSubmit} className={styles.form}>
+            {/* Title */}
             <div className={styles.formGroup}>
-              <label>Title</label>
+              <label htmlFor="title">Article Title</label>
               <input
+                id="title"
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                placeholder="Enter article title"
                 required
               />
             </div>
 
+            {/* Excerpt */}
             <div className={styles.formGroup}>
-              <label>Excerpt</label>
+              <label htmlFor="excerpt">Excerpt</label>
               <input
+                id="excerpt"
                 type="text"
                 value={excerpt}
                 onChange={(e) => setExcerpt(e.target.value)}
+                placeholder="Brief summary of the article"
               />
             </div>
 
+            {/* Content */}
             <div className={styles.formGroup}>
-              <label>Content</label>
+              <label htmlFor="content">Content</label>
               <textarea
+                id="content"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                rows={8}
+                placeholder="Full article content"
+                rows={6}
                 required
               />
             </div>
 
+            {/* Category */}
             <div className={styles.formGroup}>
-              <label>Category</label>
+              <label htmlFor="category">Category</label>
               <select
+                id="category"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
               >
@@ -273,9 +300,11 @@ export default function EditArticlePage() {
               </select>
             </div>
 
+            {/* Tags */}
             <div className={styles.formGroup}>
-              <label>Tags (comma separated)</label>
+              <label htmlFor="tags">Tags (comma separated)</label>
               <input
+                id="tags"
                 type="text"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
@@ -287,143 +316,160 @@ export default function EditArticlePage() {
             <div className={styles.formGroup}>
               <label>Current Media</label>
               {article.imageUrl && (
-                <img
-                  src={article.imageUrl}
-                  alt="current"
-                  style={{
-                    width: "100%",
-                    borderRadius: "8px",
-                    marginBottom: "8px",
-                  }}
-                />
+                <div className={styles.previewContainer}>
+                  <img
+                    src={article.imageUrl}
+                    alt="current"
+                    className={styles.preview}
+                  />
+                </div>
               )}
               {article.videoUrl && (
-                <video
-                  src={article.videoUrl}
-                  controls
-                  style={{
-                    width: "100%",
-                    borderRadius: "8px",
-                    marginBottom: "8px",
-                  }}
-                />
+                <div className={styles.previewContainer}>
+                  <video
+                    src={article.videoUrl}
+                    controls
+                    className={styles.preview}
+                  />
+                </div>
               )}
             </div>
 
             {/* Replace Media */}
             <div className={styles.formGroup}>
-              <label>Replace Media (optional)</label>
+              <label htmlFor="media">Replace Media (optional)</label>
               <div className={styles.uploadArea}>
                 <input
+                  id="media"
                   type="file"
                   accept="image/*,video/*"
                   onChange={handleMediaChange}
                   className={styles.fileInput}
                 />
                 <div className={styles.uploadPlaceholder}>
-                  <Upload size={28} />
-                  <p>Click to upload new image or video</p>
+                  <Upload size={32} />
+                  <p>Click to upload or drag and drop</p>
+                  <span>PNG, JPG, MP4, WebM up to 100MB</span>
                 </div>
               </div>
               {mediaPreview && (
-                <div style={{ marginTop: "8px" }}>
+                <div className={styles.previewContainer}>
                   {mediaType === "image" ? (
                     <img
                       src={mediaPreview}
-                      alt="preview"
-                      style={{ width: "100%", borderRadius: "8px" }}
+                      alt="Preview"
+                      className={styles.preview}
                     />
                   ) : (
                     <video
                       src={mediaPreview}
                       controls
-                      style={{ width: "100%", borderRadius: "8px" }}
+                      className={styles.preview}
                     />
                   )}
                 </div>
               )}
             </div>
 
-            {/* Validation for new video */}
-            {media && mediaType === "video" && (
-              <div className={styles.formGroup}>
-                <label>Media Validation</label>
-                {!validationResult && (
-                  <button
-                    type="button"
-                    className={styles.validateButton}
-                    onClick={validateMedia}
-                    disabled={isValidating}
-                  >
-                    {isValidating ? (
-                      <>
-                        <Loader size={16} /> Validating...
-                      </>
-                    ) : (
-                      "Validate Video"
-                    )}
-                  </button>
-                )}
-                {validationResult?.status === "success" && (
-                  <div
-                    style={{
-                      padding: "10px 16px",
-                      borderRadius: "8px",
-                      fontWeight: "600",
-                      backgroundColor:
-                        validationResult.label === "Real"
-                          ? "rgba(22,163,74,0.15)"
-                          : "rgba(220,38,38,0.15)",
-                      color:
-                        validationResult.label === "Real"
-                          ? "#22c55e"
-                          : "#ef4444",
-                      border: `1px solid ${validationResult.label === "Real" ? "rgba(22,163,74,0.3)" : "rgba(220,38,38,0.3)"}`,
-                    }}
-                  >
-                    {validationResult.label === "Real"
-                      ? "✓ Real"
-                      : "⚠ AI-Generated"}{" "}
-                    — {validationResult.confidence}% confidence
+            {/* Validation Section */}
+            {media && (
+              <div className={styles.validationSection}>
+                <div className={styles.validationHeader}>
+                  <h3>Media Verification</h3>
+                  {validationResult?.status !== "pending" && (
                     <button
                       type="button"
-                      onClick={() => setValidationResult(null)}
-                      style={{
-                        marginLeft: "12px",
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        color: "inherit",
-                      }}
+                      onClick={validateMedia}
+                      disabled={isValidating}
+                      className={styles.validateButton}
                     >
-                      Re-validate
+                      {isValidating ? (
+                        <>
+                          <Loader size={16} className={styles.spinner} />
+                          Validating...
+                        </>
+                      ) : validationResult ? (
+                        "Re-validate"
+                      ) : (
+                        "Validate Media"
+                      )}
                     </button>
+                  )}
+                </div>
+
+                {isValidating && (
+                  <div className={styles.loadingState}>
+                    <Loader size={20} className={styles.spinner} />
+                    <p>Analyzing media with AI model...</p>
                   </div>
                 )}
-                {validationResult?.status === "error" && (
-                  <div style={{ color: "#ef4444", padding: "8px" }}>
-                    {validationResult.message}
+
+                {validationResult?.status === "success" && (
+                  <div
+                    className={`${styles.result} ${validationResult.label === "Real" ? styles.success : styles.danger}`}
+                  >
+                    <div className={styles.resultContent}>
+                      <p
+                        className={
+                          validationResult.label === "Real"
+                            ? styles.labelReal
+                            : styles.labelFake
+                        }
+                      >
+                        {validationResult.label === "Real"
+                          ? "✓ Real"
+                          : "⚠ AI-Generated"}
+                      </p>
+                      <p className={styles.confidence}>
+                        Confidence: {validationResult.confidence}%
+                      </p>
+                    </div>
+                    <div className={styles.badge}>
+                      {validationResult.label === "Real"
+                        ? "✓ Verified"
+                        : "⚠ Warning"}
+                    </div>
                   </div>
+                )}
+
+                {validationResult?.status === "error" && (
+                  <div className={`${styles.result} ${styles.error}`}>
+                    <p>{validationResult.message}</p>
+                  </div>
+                )}
+
+                {!validationResult && !isValidating && (
+                  <button
+                    type="button"
+                    onClick={validateMedia}
+                    disabled={isValidating}
+                    className={styles.validateButton}
+                  >
+                    Validate Media
+                  </button>
                 )}
               </div>
             )}
 
+            {/* Form Actions */}
             <div className={styles.formActions}>
               <button
                 type="button"
-                className={styles.cancelButton}
                 onClick={() => router.back()}
+                className={styles.cancelButton}
+                disabled={saving}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className={styles.saveButton}
+                className={styles.submitButton}
                 disabled={saving}
               >
                 {saving ? (
                   <>
-                    <Loader size={16} /> Saving...
+                    <Loader size={16} className={styles.spinner} />
+                    Saving...
                   </>
                 ) : (
                   "Save Changes"
