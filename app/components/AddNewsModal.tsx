@@ -71,10 +71,10 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
   const validateMedia = async () => {
     if (!media) return;
 
-    if (mediaType !== "video") {
+    if (mediaType !== "video" && media.type !== "image/gif") {
       setValidationResult({
         status: "error",
-        message: "Only video files can be validated at the moment.",
+        message: "Only video and GIF files can be validated at the moment.",
       });
       return;
     }
@@ -113,8 +113,13 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title || !excerpt || !content || !media || !validationResult?.label) {
-      alert("Please fill all fields and validate media");
+    if (!title || !excerpt || !content || !media) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    if ((mediaType === "video" || media.type === "image/gif") && !validationResult?.label) {
+      alert("Please validate the media (Video/GIF) before publishing.");
       return;
     }
 
@@ -159,8 +164,8 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
           videoUrl,
           tags: [category.toLowerCase()],
           featured: false,
-          aiResult: validationResult.label,
-          aiConfidence: validationResult.confidence
+          aiResult: validationResult?.label || null,
+          aiConfidence: validationResult?.confidence
             ? validationResult.confidence / 100
             : null,
           aiVerified: true,
@@ -247,6 +252,7 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
               <option>Sports</option>
               <option>Entertainment</option>
               <option>Politics</option>
+              <option>Health</option>
             </select>
           </div>
 
@@ -385,7 +391,7 @@ export default function AddNewsModal({ isOpen, onClose }: AddNewsModalProps) {
             <button
               type="submit"
               className={styles.submitButton}
-              disabled={isSubmitting || !validationResult?.label}
+              disabled={isSubmitting || ((mediaType === "video" || media?.type === "image/gif") && !validationResult?.label)}
             >
               {isSubmitting ? (
                 <>

@@ -2,7 +2,6 @@
 
 import Header from "./Header";
 import HeroSection from "./HeroSection";
-import NewsGrid from "./NewsGrid";
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
 import BreakingNews from "./BreakingNews";
@@ -19,7 +18,6 @@ export default function HomePage() {
         <div className={styles.mainGrid}>
           <div>
             <DBNewsGrid />
-            <NewsGrid />
           </div>
           <div>
             <Sidebar />

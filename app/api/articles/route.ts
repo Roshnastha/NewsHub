@@ -11,7 +11,17 @@ export async function GET() {
         }
       }
     });
-    return NextResponse.json({ articles });
+
+    const parsed = articles.map((article) => ({
+      ...article,
+      tags: Array.isArray(article.tags)
+        ? article.tags
+        : article.tags
+          ? [article.tags]
+          : [],
+    }));
+
+    return NextResponse.json({ articles: parsed });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Failed to fetch articles" }, { status: 500 });
@@ -42,7 +52,7 @@ export async function POST(req: NextRequest) {
         category,
         imageUrl,
         videoUrl,
-        tags: tags || [],
+        tags: Array.isArray(tags) ? tags : tags ? [tags] : [],
         featured: featured || false,
         aiResult,
         aiConfidence,

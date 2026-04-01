@@ -107,10 +107,10 @@ export default function EditArticlePage() {
 
   const validateMedia = async () => {
     if (!media) return;
-    if (mediaType !== "video") {
+    if (mediaType !== "video" && media.type !== "image/gif") {
       setValidationResult({
         status: "error",
-        message: "Only video files can be validated at the moment.",
+        message: "Only video and GIF files can be validated at the moment.",
       });
       return;
     }
@@ -139,7 +139,7 @@ export default function EditArticlePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (media && mediaType === "video" && !validationResult?.label) {
+    if (media && (mediaType === "video" || media.type === "image/gif") && !validationResult?.label) {
       alert("Please validate the new video before saving");
       return;
     }
@@ -297,6 +297,7 @@ export default function EditArticlePage() {
                 <option>Sports</option>
                 <option>Entertainment</option>
                 <option>Politics</option>
+                <option>Health</option>
               </select>
             </div>
 

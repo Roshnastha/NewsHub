@@ -1,45 +1,50 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import { useNews } from '@/app/context/NewsContext';
-import NewsModal from '@/app/components/NewsModal';
 import styles from '@/app/components/NewsGrid.module.css';
 import pageStyles from './category.module.css';
-import { Bookmark, MessageCircle, Eye } from 'lucide-react';
+import { Bookmark, Clock, User } from 'lucide-react';
 import { MdEdit, MdDelete } from 'react-icons/md';
 import { useState } from 'react';
+import { useAuth } from '@/app/context/AuthContext';
 
 export default function CategoryPage() {
   const params = useParams();
+  const router = useRouter();
   const slug = params.slug as string;
-  const { articles, deleteArticle } = useNews();
+  const { dbArticles, refreshArticles } = useNews();
+  const { isPublisher } = useAuth();
   
   // Decode the slug and find matching articles
   const category = decodeURIComponent(slug).replace(/-/g, ' ');
-  const categoryArticles = articles.filter(
-    article => article.category.toLowerCase() === category.toLowerCase()
+  const categoryArticles = dbArticles.filter(
+    article => article.category && article.category.toLowerCase() === category.toLowerCase()
   );
 
-  const [bookmarkedArticles, setBookmarkedArticles] = useState<number[]>([]);
-  const [editingArticle, setEditingArticle] = useState<number | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [bookmarkedArticles, setBookmarkedArticles] = useState<string[]>([]);
 
-  const toggleBookmark = (id: number) => {
+  const toggleBookmark = (id: string) => {
     setBookmarkedArticles(prev =>
       prev.includes(id) ? prev.filter(aid => aid !== id) : [...prev, id]
     );
   };
 
-  const handleEdit = (articleId: number) => {
-    setEditingArticle(articleId);
-    setIsModalOpen(true);
+  const handleEdit = (articleId: string) => {
+    router.push(`/news/${articleId}/edit`);
   };
 
-  const handleDelete = (articleId: number) => {
+  const handleDelete = async (articleId: string) => {
     if (confirm('Are you sure you want to delete this article?')) {
-      deleteArticle(articleId);
+      try {
+        const res = await fetch(`/api/articles/${articleId}`, { method: "DELETE" });
+        if (res.ok) refreshArticles();
+        else alert("Failed to delete article");
+      } catch {
+        alert("Failed to delete article");
+      }
     }
   };
 
@@ -58,40 +63,95 @@ export default function CategoryPage() {
           {categoryArticles.length > 0 ? (
             <div className={pageStyles.articlesGrid}>
               {categoryArticles.map((article) => (
-                <article key={article.id} className={styles.newsCard}>
+                <article 
+                  key={article.id} 
+                  className={styles.newsCard}
+                  onClick={() => router.push(`/news/${article.id}`)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <div className={styles.cardImage}>
-                    <img
-                      src={article.image}
-                      alt={article.title}
-                    />
+                    {article.imageUrl ? (
+                      <img
+                        src={article.imageUrl}
+                        alt={article.title}
+                      />
+                    ) : article.videoUrl ? (
+                      <video
+                        src={article.videoUrl}
+                        className={styles.articleImage}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                    ) : null}
                     <div className={styles.cardActions}>
                       <button
-                        className={styles.editButton}
+                        className={styles.bookmarkButton}
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleEdit(article.id);
+                          toggleBookmark(article.id);
                         }}
-                        title="Edit article"
+                        title="Bookmark"
                       >
-                        <MdEdit size={20} />
+                        <Bookmark
+                          size={20}
+                          fill={
+                            bookmarkedArticles.includes(article.id)
+                              ? "currentColor"
+                              : "none"
+                          }
+                        />
                       </button>
-                      <button
-                        className={styles.deleteButton}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(article.id);
-                        }}
-                        title="Delete article"
-                      >
-                        <MdDelete size={20} />
-                      </button>
+                      {isPublisher && (
+                        <>
+                          <button
+                            className={styles.editButton}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEdit(article.id);
+                            }}
+                            title="Edit article"
+                          >
+                            <MdEdit size={20} />
+                          </button>
+                          <button
+                            className={styles.deleteButton}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(article.id);
+                            }}
+                            title="Delete article"
+                          >
+                            <MdDelete size={20} />
+                          </button>
+                        </>
+                      )}
                     </div>
                     <div className={styles.cardBadges}>
                       <div className={styles.badge}>{article.category}</div>
-                      {article.trending && (
-                        <div className={`${styles.badge} ${styles.trending}`}>Trending</div>
-                      )}
                     </div>
+                    {/* AI/Real badge - bottom left of thumbnail */}
+                    {article.aiResult && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          bottom: "12px",
+                          left: "12px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          backgroundColor:
+                            article.aiResult === "Real" ? "#16a34a" : "#dc2626",
+                          color: "white",
+                          padding: "4px 10px",
+                          borderRadius: "9999px",
+                          fontSize: "0.72rem",
+                          fontWeight: "700",
+                          boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+                          zIndex: 10,
+                        }}
+                      >
+                        {article.aiResult === "Real" ? "✓ Real" : "⚠ AI Generated"}
+                      </div>
+                    )}
                   </div>
 
                   <div className={styles.cardContent}>
@@ -100,25 +160,13 @@ export default function CategoryPage() {
 
                     <div className={styles.cardMeta}>
                       <div className={styles.metaItem}>
-                        <Eye size={16} /> {article.views}
+                        <User size={16} />
+                        <span>{article.author.name}</span>
                       </div>
                       <div className={styles.metaItem}>
-                        <span>{article.author}</span>
+                        <Clock size={16} />
+                        <span>{new Date(article.publishedAt).toLocaleDateString()}</span>
                       </div>
-                      <span>{article.publishedAt}</span>
-                    </div>
-
-                    <div className={styles.cardFooter}>
-                      <div className={styles.commentCount}>
-                        <MessageCircle size={16} /> {article.comments}
-                      </div>
-                    </div>
-
-                    <div className={styles.modelResult}>
-                      <span className={styles.modelLabel}>Model Result:</span>
-                      <span className={`${styles.modelValue} ${styles[`result${article.modelResult}`]}`}>
-                        {article.modelResult || 'Unverified'}
-                      </span>
                     </div>
                   </div>
                 </article>
@@ -132,16 +180,6 @@ export default function CategoryPage() {
         </main>
         <Footer />
       </div>
-
-      <NewsModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setEditingArticle(null);
-        }}
-        article={editingArticle ? articles.find(a => a.id === editingArticle) : undefined}
-        isEdit={editingArticle !== null}
-      />
     </>
   );
 }

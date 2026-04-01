@@ -74,38 +74,57 @@ async def load_model():
         input_name = None
 
 def extract_16_consecutive_frames(video_path):
-    """Extract first 16 consecutive frames from video"""
+    """Extract 16 frames from video, padding if necessary"""
     cap = cv2.VideoCapture(video_path)
-    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    if total_frames < 16:
-        raise ValueError("Video too short - needs at least 16 frames")
-
-    # Pick the first 16 consecutive frames
-    start_idx = 0
-    end_idx = start_idx + 16
-
-    mean = np.array([0.485, 0.456, 0.406])  # < ADDED
-    std  = np.array([0.229, 0.224, 0.225])  # < ADDED
+    mean = np.array([0.485, 0.456, 0.406])
+    std  = np.array([0.229, 0.224, 0.225])
 
     frames = []
-    for i in range(total_frames):
+    while True:
         ret, frame = cap.read()
         if not ret:
             break
-        if start_idx <= i < end_idx:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame = cv2.resize(frame, (224, 224))
-            frame = frame.astype(np.float32) / 255.0
-            frame = (frame - mean) / std    # < ADDED
-
-            frames.append(frame)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = cv2.resize(frame, (224, 224))
+        frame = frame.astype(np.float32) / 255.0
+        frame = (frame - mean) / std
+        frames.append(frame)
+        if len(frames) == 16:
+            break
 
     cap.release()
 
+    # Fallback to PIL if OpenCV cannot read the GIF
+    if len(frames) == 0:
+        try:
+            from PIL import Image
+            with Image.open(video_path) as img:
+                for i in range(getattr(img, "n_frames", 1)):
+                    img.seek(i)
+                    frame = img.convert("RGB")
+                    frame = np.array(frame)
+                    frame = cv2.resize(frame, (224, 224))
+                    frame = frame.astype(np.float32) / 255.0
+                    frame = (frame - mean) / std
+                    frames.append(frame)
+                    if len(frames) == 16:
+                        break
+        except Exception:
+            pass
+
+    if len(frames) == 0:
+        raise ValueError("Could not extract any frames from the file.")
+
+    
+    if len(frames) < 16:
+        original_count = len(frames)
+        while len(frames) < 16:
+            frames.append(frames[len(frames) % original_count])
+
     # [16, 224, 224, 3] → [1, 16, 3, 224, 224]
     frames = np.array(frames).transpose(0, 3, 1, 2)
-    frames = np.expand_dims(frames, axis=0).astype(np.float32) # < ADDED
+    frames = np.expand_dims(frames, axis=0).astype(np.float32)
     return frames
 
 @app.get("/health")
@@ -131,31 +150,14 @@ async def predict(file: UploadFile = File(...)):
     # early sanity checks --------------------------------------------------
     # make sure we got a video
     content_type = file.content_type or ""
-    if not content_type.startswith("video/"):
-        raise HTTPException(status_code=400, detail="Uploaded file is not a video")
+    if not (content_type.startswith("video/") or content_type == "image/gif"):
+        raise HTTPException(status_code=400, detail="Uploaded file is not a video or GIF")
 
     # log the filename for easier debugging
     print(f"/predict called with {file.filename} ({content_type})")
 
     # If model not loaded, use demo mode
-    if session is None:
-        # Demo mode - return random prediction
-        demo_predictions = [
-            {"label": "Real", "confidence": 0.87},
-            {"label": "AI-generated", "confidence": 0.72},
-            {"label": "Real", "confidence": 0.91},
-            {"label": "AI-generated", "confidence": 0.68},
-        ]
-        demo = demo_predictions[np.random.randint(0, len(demo_predictions))]
-        confidence_percentage = int(demo["confidence"] * 100)
-        
-        return PredictionResponse(
-            prediction=f"{confidence_percentage}% {demo['label']}",
-            confidence=demo["confidence"],
-            label=demo["label"],
-            raw_probability={"AI-generated": 1 - demo["confidence"], "Real": demo["confidence"]} if demo["label"] == "Real" else {"AI-generated": demo["confidence"], "Real": 1 - demo["confidence"]},
-            logits=[[1.5, 2.1]] if demo["label"] == "Real" else [[-2.1, 1.8]]
-        )
+    
     
     # Create temp file
     temp_dir = tempfile.gettempdir()
@@ -220,7 +222,7 @@ async def info():
             "info": "/info (GET)",
             "docs": "/docs"
         },
-        "supported_formats": ["mp4", "avi", "mov", "mkv", "flv"],
+        "supported_formats": ["mp4", "avi", "mov", "mkv", "flv", "gif"],
         "classes": ["AI-generated", "Real"]
     }
 

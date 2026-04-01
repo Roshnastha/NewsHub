@@ -6,11 +6,11 @@ import { useNews } from '@/app/context/NewsContext';
 import { useRouter } from 'next/navigation';
 
 export default function BreakingNews() {
-  const { articles, dbArticles } = useNews();
+  const { dbArticles } = useNews();
   const router = useRouter();
   const tickerRef = useRef<HTMLDivElement>(null);
 
-  const breaking = articles.filter(a => a.category === 'Breaking News');
+  const breaking = dbArticles.filter(a => a.category === 'Breaking News');
   const allHeadlines = [
     ...breaking.map(a => ({ title: a.title, id: String(a.id) })),
     ...dbArticles.map(a => ({ title: a.title, id: a.id })),

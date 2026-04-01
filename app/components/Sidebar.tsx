@@ -35,7 +35,7 @@ interface MetalSpotEntry {
 }
 
 export default function Sidebar() {
-  const { articles, dbArticles } = useNews();
+  const { dbArticles } = useNews();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
@@ -159,9 +159,8 @@ export default function Sidebar() {
   // Trending topics from DB articles
   const trendingTopics = (() => {
     const categoryCount: Record<string, number> = {};
-    [...articles, ...dbArticles].forEach((a) => {
-      const cat =
-        "category" in a ? a.category : (a as { category?: string }).category;
+    dbArticles.forEach((a) => {
+      const cat = a.category;
       if (cat) categoryCount[cat] = (categoryCount[cat] || 0) + 1;
     });
     return Object.entries(categoryCount)

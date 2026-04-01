@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Menu, X, Sun, Moon, LogOut, User } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
@@ -11,7 +11,12 @@ const categories = ['Politics','Technology','Business','Sports','Entertainment',
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const router = useRouter();
   const { user, logout, isLoggedIn } = useAuth();
 
@@ -51,7 +56,7 @@ export default function Header() {
         </nav>
         <div className={styles.actions}>
           <button className={styles.themeToggle} onClick={() => setTheme(theme==='dark'?'light':'dark')}>
-            {theme==='dark'?<Sun size={20} />:<Moon size={20} />}
+            {mounted && theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           </button>
           
           {isLoggedIn && user ? (
