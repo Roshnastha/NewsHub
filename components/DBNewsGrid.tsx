@@ -11,8 +11,8 @@ import {
   TrendingUp,
   Plus,
 } from "lucide-react";
-import { useNews } from "@/app/context/NewsContext";
-import { useAuth } from "@/app/context/AuthContext";
+import { useNews  } from '@/context';
+import { useAuth  } from '@/context';
 import AddNewsModal from './AddNewsModal';
 import { MdEdit, MdDelete } from "react-icons/md";
 import styles from "./NewsGrid.module.css";

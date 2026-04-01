@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { TrendingUp, Mail, Cloud, DollarSign, Users } from "lucide-react";
-import { useNews } from "@/app/context/NewsContext";
+import { useNews  } from '@/context';
 import { useRouter } from "next/navigation";
 import styles from "./Sidebar.module.css";
 

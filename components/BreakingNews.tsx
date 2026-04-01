@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import styles from './BreakingNews.module.css';
-import { useNews } from '@/app/context/NewsContext';
+import { useNews  } from '@/context';
 import { useRouter } from 'next/navigation';
 
 export default function BreakingNews() {

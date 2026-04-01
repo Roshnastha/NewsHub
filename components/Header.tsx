@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Menu, X, Sun, Moon, LogOut, User } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/app/context/AuthContext';
+import { useAuth  } from '@/context';
 import styles from './Header.module.css';
 
 const categories = ['Politics','Technology','Business','Sports','Entertainment','Science','Health'];

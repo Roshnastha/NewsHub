@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useState } from 'react';
 import { X } from 'lucide-react';
-import { useNews } from '@/app/context/NewsContext';
+import { useNews  } from '@/context';
 import { NewsArticle } from '@/lib/news-data';
 import styles from './NewsModal.module.css';
 

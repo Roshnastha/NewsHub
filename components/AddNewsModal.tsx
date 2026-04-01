@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { X, Upload, Loader } from "lucide-react";
-import { useNews } from "@/app/context/NewsContext";
-import { useAuth } from "@/app/context/AuthContext";
-import { predictVideo } from "@/app/lib/api-client";
+import { useNews  } from '@/context';
+import { useAuth  } from '@/context';
+import { predictVideo } from "@/lib/api-client";
 import styles from "./AddNewsModal.module.css";
 
 interface ValidationResult {

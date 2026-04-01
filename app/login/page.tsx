@@ -12,9 +12,9 @@ import {
   Shield,
 } from "lucide-react";
 import { FaGoogle, FaMicrosoft, FaApple } from "react-icons/fa";
-import Header from "@/app/components/Header";
-import Footer from "@/app/components/Footer";
-import { useAuth } from "@/app/context/AuthContext";
+import { Header } from '@/components';
+import { Footer } from '@/components';
+import { useAuth  } from '@/context';
 import styles from "./login.module.css";
 
 export default function LoginPage() {

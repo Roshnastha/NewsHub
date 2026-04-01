@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { predictNews, PredictionResponse, checkApiHealth } from '@/app/lib/api-client';
+import { predictNews, PredictionResponse, checkApiHealth } from '@/lib/api-client';
 
 interface UseFakeNewsDetectionReturn {
   prediction: PredictionResponse | null;

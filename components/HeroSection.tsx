@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import styles from "./HeroSection.module.css";
-import { useNews } from "@/app/context/NewsContext";
+import { useNews  } from '@/context';
 
 export default function HeroSection() {
   const [current, setCurrent] = useState(0);

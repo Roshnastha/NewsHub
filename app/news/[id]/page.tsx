@@ -9,8 +9,8 @@ import {
   Clock,
   User,
 } from "lucide-react";
-import Header from "@/app/components/Header";
-import Footer from "@/app/components/Footer";
+import { Header } from '@/components';
+import { Footer } from '@/components';
 import styles from "./article.module.css";
 
 interface DBArticle {

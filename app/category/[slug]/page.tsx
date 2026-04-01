@@ -1,15 +1,15 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import Header from '@/app/components/Header';
-import Footer from '@/app/components/Footer';
-import { useNews } from '@/app/context/NewsContext';
-import styles from '@/app/components/NewsGrid.module.css';
+import { Header } from '@/components';
+import { Footer } from '@/components';
+import { useNews  } from '@/context';
+import styles from '@/components/NewsGrid.module.css';
 import pageStyles from './category.module.css';
 import { Bookmark, Clock, User } from 'lucide-react';
 import { MdEdit, MdDelete } from 'react-icons/md';
 import { useState } from 'react';
-import { useAuth } from '@/app/context/AuthContext';
+import { useAuth  } from '@/context';
 
 export default function CategoryPage() {
   const params = useParams();

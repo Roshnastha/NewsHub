@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { X, Upload, Loader } from "lucide-react";
-import { useAuth } from "@/app/context/AuthContext";
-import { useNews } from "@/app/context/NewsContext";
-import { predictVideo } from "@/app/lib/api-client";
-import Header from "@/app/components/Header";
-import Footer from "@/app/components/Footer";
-import styles from "@/app/components/AddNewsModal.module.css";
+import { useAuth  } from '@/context';
+import { useNews  } from '@/context';
+import { predictVideo } from "@/lib/api-client";
+import { Header } from '@/components';
+import { Footer } from '@/components';
+import styles from "@/components/AddNewsModal.module.css";
 
 interface DBArticle {
   id: string;
